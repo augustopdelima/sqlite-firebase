@@ -30,8 +30,11 @@ class DatabaseHelper {
     // Monta o caminho completo até o arquivo do banco
     final dbPath = join(documentsDirectory.path, fileName);
 
+    if (await File(dbPath).exists()) {
+      await File(dbPath).delete();
+    }
     // Abre (ou cria) o banco de dados passando um onCreate que cria a tabela
-    return await openDatabase(dbPath, version: 1, onCreate: _createDB);
+    return await openDatabase(dbPath, version: 2, onCreate: _createDB);
   }
 
   // SQL de criação das tabelas
@@ -47,6 +50,18 @@ dataNascimento TEXT NOT NULL,
 cidadeNascimento TEXT NOT NULL
 )
 ''');
+
+    await db.execute('''
+CREATE TABLE cidades(
+id INTEGER PRIMARY KEY AUTOINCREMENT,
+nome TEXT NOT NULL
+)
+''');
+
+    await db.insert('cidades', {'nome': 'São Paulo'});
+    await db.insert('cidades', {'nome': 'Rio de Janeiro'});
+    await db.insert('cidades', {'nome': 'Belo Horizonte'});
+    await db.insert('cidades', {'nome': 'Taquara'});
   }
 
   // Fecha o banco (quando necessário)

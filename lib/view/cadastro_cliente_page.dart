@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../viewmodel/cliente_viewmodel.dart';
+import 'dialog_buscar_cidade.dart';
 
 // Tela de cadastro/edição (View)
 // NÃO importa Model - usa apenas DTO do ViewModel
@@ -29,7 +30,9 @@ class _CadastroClientePageState extends State<CadastroClientePage> {
     super.initState();
     // Inicializa os controllers com os valores do DTO (se existir) ou vazios
     _cpfController = TextEditingController(text: widget.clienteDTO?.cpf ?? '');
-    _nomeController = TextEditingController(text: widget.clienteDTO?.nome ?? '');
+    _nomeController = TextEditingController(
+      text: widget.clienteDTO?.nome ?? '',
+    );
     _idadeController = TextEditingController(
       text: widget.clienteDTO?.idade ?? '',
     );
@@ -86,11 +89,26 @@ class _CadastroClientePageState extends State<CadastroClientePage> {
     if (mounted) Navigator.pop(context);
   }
 
+  Future<void> _abrirDialogBuscaCidade() async {
+    final cidadeSelecionada = await showDialog<String>(
+      context: context,
+      builder: (context) => const DialogBuscaCidade(),
+    );
+
+    if (cidadeSelecionada != null && mounted) {
+      setState(() {
+        _cidadeController.text = cidadeSelecionada;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.clienteDTO == null ? 'Novo Cliente' : 'Editar Cliente'),
+        title: Text(
+          widget.clienteDTO == null ? 'Novo Cliente' : 'Editar Cliente',
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -135,13 +153,23 @@ class _CadastroClientePageState extends State<CadastroClientePage> {
               ),
 
               // Campo Cidade de Nascimento
-              TextFormField(
-                controller: _cidadeController,
-                decoration: const InputDecoration(
-                  labelText: 'Cidade de Nascimento',
-                ),
-                validator: (v) =>
-                    (v == null || v.trim().isEmpty) ? 'Informe a cidade' : null,
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: _cidadeController,
+                      decoration: const InputDecoration(
+                        labelText: 'Cidade de Nascimento',
+                      ),
+                      enabled: false, // Campo desabilitado
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.search),
+                    onPressed:
+                        _abrirDialogBuscaCidade, // Chama a função de busca
+                  ),
+                ],
               ),
 
               const SizedBox(height: 20),

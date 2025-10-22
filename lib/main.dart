@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'viewmodel/cliente_viewmodel.dart';
 import 'repository/cliente_repository.dart';
+import 'repository/cidade_repository.dart';
+import 'viewmodel/cidade_viewmodel.dart';
 import 'db/db_helper.dart';
 
 // Ponto de entrada da aplicação
@@ -20,6 +22,9 @@ Future<void> main() async {
         // Fornece uma instância de ClienteViewModel para toda a árvore de widgets
         ChangeNotifierProvider(
           create: (_) => ClienteViewModel(ClienteRepository()),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => CidadeViewModel(CidadeRepository()),
         ),
       ],
       child: const MyApp(),
