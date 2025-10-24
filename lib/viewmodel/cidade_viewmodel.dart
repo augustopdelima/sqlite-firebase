@@ -25,52 +25,43 @@ class CidadeDTO {
 // ViewModel que expõe dados e ações para as Views (usa ChangeNotifier para MVVM reativo)
 class CidadeViewModel extends ChangeNotifier {
   // Repositório de dados (injeção simples via construtor)
-  final CidadeRepository _repository;
+ final CidadeRepositoryAdapter _repository = CidadeRepositoryAdapter();
 
-  // Lista interna de clientes (Model) - privada
   List<Cidade> _cidades = [];
+  String _ultimoFiltro = '';
 
   // Lista pública de DTOs que a View irá observar
   List<CidadeDTO> get cidades =>
       _cidades.map((c) => CidadeDTO.fromModel(c)).toList();
 
-  // Último filtro usado (para manter a lista consistente ao voltar da tela de edição)
-  String _ultimoFiltro = '';
-
-  // Construtor recebe o repositório
-  CidadeViewModel(this._repository) {
-    // Ao construir o ViewModel, carregamos a lista inicial
+  CidadeViewModel() {
     loadCidades();
   }
 
-  // Carrega clientes do repositório com filtro opcional
+  /
   Future<void> loadCidades([String filtro = '']) async {
-    // Guarda o filtro atual
     _ultimoFiltro = filtro;
-    // Busca no repositório
     _cidades = await _repository.buscar(filtro: filtro);
-    // Notifica listeners (Views que usam Provider/Consumer serão atualizadas)
     notifyListeners();
   }
 
-  // Adiciona um cliente (recebe dados primitivos da View)
+  
   Future<void> adicionarCidade({required String nome}) async {
     final cidade = Cidade(nome: nome);
     await _repository.inserir(cidade);
-    // Recarrega a lista com o último filtro aplicado
     await loadCidades(_ultimoFiltro);
   }
 
-  // Atualiza um cliente (recebe dados primitivos da View)
+  
   Future<void> editarCidade({required int id, required String nome}) async {
     final cidade = Cidade(id: id, nome: nome);
     await _repository.atualizar(cidade);
     await loadCidades(_ultimoFiltro);
   }
 
-  // Remove um cliente pelo código
-  Future<void> removerCliente(int codigo) async {
-    await _repository.excluir(codigo);
+  
+  Future<void> removerCidade(int id) async {
+    await _repository.excluir(id);
     await loadCidades(_ultimoFiltro);
-  }
+  } 
 }

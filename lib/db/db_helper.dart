@@ -30,9 +30,6 @@ class DatabaseHelper {
     // Monta o caminho completo até o arquivo do banco
     final dbPath = join(documentsDirectory.path, fileName);
 
-    if (await File(dbPath).exists()) {
-      await File(dbPath).delete();
-    }
     // Abre (ou cria) o banco de dados passando um onCreate que cria a tabela
     return await openDatabase(dbPath, version: 2, onCreate: _createDB);
   }

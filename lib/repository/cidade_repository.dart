@@ -1,12 +1,6 @@
 import '../model/cidade.dart';
 import '../db/db_helper.dart';
-
-abstract class ICidadeRepository {
-  Future<int> inserir(Cidade cidade);
-  Future<int> atualizar(Cidade cidade);
-  Future<int> excluir(int id);
-  Future<List<Cidade>> buscar({String filtro = ''});
-}
+import 'interfaces/cidade.dart';
 
 class CidadeRepository implements ICidadeRepository {
   final DatabaseHelper _dbHelper = DatabaseHelper.instance;
