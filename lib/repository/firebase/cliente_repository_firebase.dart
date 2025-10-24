@@ -7,7 +7,10 @@ class ClienteRepositoryFirebase implements IClienteRepository {
 
   @override
   Future<int> inserir(Cliente cliente) async {
-    await _collection.add(cliente.toMap());
+    final id = DateTime.now().millisecondsSinceEpoch;
+    cliente.codigo = id;
+
+    await _collection.doc(id.toString()).set(cliente.toMap());
     return 1;
   }
 
@@ -26,12 +29,20 @@ class ClienteRepositoryFirebase implements IClienteRepository {
 
   @override
   Future<List<Cliente>> buscar({String filtro = ''}) async {
-    final query = filtro.isEmpty
-        ? await _collection.get()
-        : await _collection.where('nome', isGreaterThanOrEqualTo: filtro).get();
+    QuerySnapshot query;
 
-    return query.docs
-        .map((d) => Cliente.fromMap({...d.data(), 'codigo': d.id}))
-        .toList();
+    if (filtro.isEmpty) {
+      query = await _collection.get();
+    } else {
+      query = await _collection
+          .where('nome', isGreaterThanOrEqualTo: filtro)
+          .where('nome', isLessThanOrEqualTo: '$filtro\uf8ff')
+          .get();
+    }
+
+    return query.docs.map((d) {
+      final data = d.data() as Map<String, dynamic>;
+      return Cliente.fromMap({...data, 'codigo': int.tryParse(d.id) ?? 0});
+    }).toList();
   }
 }

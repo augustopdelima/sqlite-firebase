@@ -175,7 +175,12 @@ class _CadastroClientePageState extends State<CadastroClientePage> {
               const SizedBox(height: 20),
 
               // Botão de salvar
-              ElevatedButton(onPressed: _salvar, child: const Text('Salvar')),
+              ElevatedButton(
+                onPressed: () async {
+                  await _salvar();
+                },
+                child: const Text('Salvar'),
+              ),
             ],
           ),
         ),

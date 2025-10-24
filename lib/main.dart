@@ -1,10 +1,11 @@
 import 'package:exdb/firebase_options.dart';
+import 'package:exdb/repository/adapter/cidade_adapter.dart';
 import 'package:exdb/view/lista_cliente.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'repository/adapter/cliente_adapter.dart';
+import 'services/settings.dart';
 import 'viewmodel/cliente_viewmodel.dart';
-import 'repository/cidade_repository.dart';
 import 'viewmodel/cidade_viewmodel.dart';
 import 'db/db_helper.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -18,19 +19,23 @@ Future<void> main() async {
   // (Opcional) Inicializa o banco explicitamente para evitar atrasos na primeira operação
   await DatabaseHelper.instance.database;
 
-  final clienteRepo = await ClienteRepositoryAdapter.create();
+  final settings = SettingsPreferences();
+
+  final clienteRepo = await ClienteRepositoryAdapter.create(settings);
 
   final clienteVM = ClienteViewModel.withRepository(clienteRepo);
+
+  final cidadeRepo = await CidadeRepositoryAdapter.create(settings);
+
+  final cidadeVM = CidadeViewModel.withRepository(cidadeRepo);
 
   // Executa o app dentro de um Provider que injeta o ViewModel (MVVM)
   runApp(
     MultiProvider(
       providers: [
-        // Fornece uma instância de ClienteViewModel para toda a árvore de widgets
+        ChangeNotifierProvider(create: (_) => settings),
         ChangeNotifierProvider(create: (_) => clienteVM),
-        ChangeNotifierProvider(
-          create: (_) => CidadeViewModel(CidadeRepository()),
-        ),
+        ChangeNotifierProvider(create: (_) => cidadeVM),
       ],
       child: const MyApp(),
     ),

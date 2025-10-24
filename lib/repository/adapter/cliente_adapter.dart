@@ -1,16 +1,18 @@
 import '../../../model/cliente.dart';
+import '../../services/settings.dart';
 import '../interfaces/cliente.dart';
 import '../cliente_repository.dart';
 import '../firebase/cliente_repository_firebase.dart';
-import '../../../services/preferences.dart';
 
 class ClienteRepositoryAdapter implements IClienteRepository {
-  late final IClienteRepository _repo;
+  late IClienteRepository _repo;
 
   ClienteRepositoryAdapter._(this._repo);
 
-  static Future<ClienteRepositoryAdapter> create() async {
-    final useFirebase = await PreferencesService.getUseFirebase();
+  static Future<ClienteRepositoryAdapter> create(
+    SettingsPreferences settings,
+  ) async {
+    final useFirebase = settings.useFirebase;
     final repo = useFirebase
         ? ClienteRepositoryFirebase()
         : ClienteRepository();

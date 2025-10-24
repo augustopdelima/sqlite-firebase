@@ -55,7 +55,6 @@ class ClienteViewModel extends ChangeNotifier {
   List<Cliente> _clientes = [];
   String _ultimoFiltro = '';
 
-  // Construtor alternativo para receber repository pronto
   ClienteViewModel.withRepository(this._repository) {
     loadClientes();
   }

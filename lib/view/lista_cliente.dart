@@ -1,3 +1,4 @@
+import 'package:exdb/components/shared_switch.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../viewmodel/cliente_viewmodel.dart';
@@ -54,6 +55,7 @@ class _ListaClientesPageState extends State<ListaClientesPage> {
       ),
       body: Column(
         children: [
+          const PreferencesSwitch(),
           // Campo de pesquisa por nome
           Padding(
             padding: const EdgeInsets.all(8.0),
@@ -81,7 +83,9 @@ class _ListaClientesPageState extends State<ListaClientesPage> {
                       final ClienteDTO dto = vm.clientes[index];
                       return ListTile(
                         title: Text(dto.nome),
-                        subtitle: Text(dto.subtitulo), // Dado formatado pelo ViewModel
+                        subtitle: Text(
+                          dto.subtitulo,
+                        ), // Dado formatado pelo ViewModel
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
