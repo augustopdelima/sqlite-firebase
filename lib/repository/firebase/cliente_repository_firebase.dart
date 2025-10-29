@@ -9,7 +9,6 @@ class ClienteRepositoryFirebase implements IClienteRepository {
   Future<int> inserir(Cliente cliente) async {
     final id = DateTime.now().millisecondsSinceEpoch;
     cliente.codigo = id;
-
     await _collection.doc(id.toString()).set(cliente.toMap());
     return 1;
   }

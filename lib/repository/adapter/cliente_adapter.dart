@@ -6,17 +6,32 @@ import '../firebase/cliente_repository_firebase.dart';
 
 class ClienteRepositoryAdapter implements IClienteRepository {
   late IClienteRepository _repo;
+  final SettingsPreferences _settings;
 
-  ClienteRepositoryAdapter._(this._repo);
+  ClienteRepositoryAdapter._(this._settings) {
+    _updateRepository(_settings.useFirebase);
+
+    _settings.addListener(_onSettingsChanged);
+  }
 
   static Future<ClienteRepositoryAdapter> create(
     SettingsPreferences settings,
   ) async {
-    final useFirebase = settings.useFirebase;
-    final repo = useFirebase
-        ? ClienteRepositoryFirebase()
-        : ClienteRepository();
-    return ClienteRepositoryAdapter._(repo);
+    return ClienteRepositoryAdapter._(settings);
+  }
+
+  void _onSettingsChanged() {
+    final useFirebase = _settings.useFirebase;
+
+    _updateRepository(useFirebase);
+  }
+
+  void _updateRepository(bool useFirebase) {
+    _repo = useFirebase ? ClienteRepositoryFirebase() : ClienteRepository();
+  }
+
+  void dispose() {
+    _settings.removeListener(_onSettingsChanged);
   }
 
   @override

@@ -10,6 +10,6 @@ class PreferencesService {
 
   static Future<bool> getUseFirebase() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_keyUseFirebase) ?? false;
+    return prefs.getBool(_keyUseFirebase) ?? true;
   }
 }
