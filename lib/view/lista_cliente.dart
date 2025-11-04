@@ -1,11 +1,13 @@
+import 'dart:async'; // Importar para usar Timer
+
 import 'package:exdb/components/shared_switch.dart';
+import 'package:exdb/services/auth_services.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../viewmodel/cliente_viewmodel.dart';
 import 'cadastro_cliente_page.dart';
 
 // Tela que exibe a lista e o campo de pesquisa (View)
-// NÃO importa Model - usa apenas DTO do ViewModel
 class ListaClientesPage extends StatefulWidget {
   const ListaClientesPage({super.key});
 
@@ -14,49 +16,108 @@ class ListaClientesPage extends StatefulWidget {
 }
 
 class _ListaClientesPageState extends State<ListaClientesPage> {
-  // Controller do campo de pesquisa
   final TextEditingController _searchController = TextEditingController();
+
+  // 1. Variável para controlar o debounce (o atraso na pesquisa)
+  Timer? _debounce;
 
   @override
   void initState() {
     super.initState();
-    // Opcional: poderia carregar aqui, mas o ViewModel já carrega na construção
+    // 2. Carrega a lista de clientes na inicialização, se estiver vazia.
+    // Usamos addPostFrameCallback para garantir que o 'context' esteja disponível.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<ClienteViewModel>(context, listen: false).loadClientes('');
+    });
   }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _debounce?.cancel(); // 3. Cancela o Timer no dispose
     super.dispose();
+  }
+
+  // 4. Nova função para a lógica de pesquisa com Debounce
+  void _onSearchChanged(String query, ClienteViewModel vm) {
+    // Cancela o timer anterior se ele existir
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+
+    // Cria um novo timer para executar a pesquisa após 500ms
+    _debounce = Timer(const Duration(milliseconds: 500), () async {
+      await vm.loadClientes(query);
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    // Obtém o ViewModel via Provider
+    // Observe que a ViewModel é acessada antes do build (no _onSearchChanged), mas
+    // aqui ela é acessada para acionar a reconstrução quando os dados mudam.
     final vm = Provider.of<ClienteViewModel>(context);
+    final auth = Provider.of<AuthService>(context);
+
+    final user = auth.user;
+    final nome = user?.displayName ?? 'usuário';
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Clientes (MVVM + SQLite)'),
         actions: [
-          // Botão para criar novo cliente
+          // Botão adicionar cliente
           IconButton(
             icon: const Icon(Icons.add),
             onPressed: () async {
-              // Navega para a tela de cadastro sem passar cliente (novo)
               await Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => CadastroClientePage()),
+                MaterialPageRoute(builder: (_) => const CadastroClientePage()),
               );
-              // Ao voltar, recarrega a lista com o filtro atual
+              // Recarrega a lista após o cadastro/edição
               await vm.loadClientes(_searchController.text);
+            },
+          ),
+          // Botão sair (logout)
+          IconButton(
+            icon: const Icon(Icons.logout),
+            tooltip: 'Sair',
+            onPressed: () async {
+              await auth.signOut();
             },
           ),
         ],
       ),
       body: Column(
         children: [
-          const PreferencesSwitch(),
-          // Campo de pesquisa por nome
+          // Saudação ao usuário logado (Não precisa de alteração)
+          Container(
+            width: double.infinity,
+            color: Colors.blue.shade50,
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  backgroundImage: user?.photoURL != null
+                      ? NetworkImage(user!.photoURL!)
+                      : null,
+                  child: user?.photoURL == null
+                      ? const Icon(Icons.person)
+                      : null,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    "Olá, $nome",
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const PreferencesSwitch(), // Assumindo que é o seu widget
+          // Campo de pesquisa
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: TextField(
@@ -66,34 +127,31 @@ class _ListaClientesPageState extends State<ListaClientesPage> {
                 prefixIcon: Icon(Icons.search),
                 border: OutlineInputBorder(),
               ),
-              onChanged: (value) async {
-                // Chama o ViewModel para atualizar a lista com o filtro
-                await vm.loadClientes(value);
+              // 5. Usa a função de Debounce aqui
+              onChanged: (value) {
+                _onSearchChanged(value, vm);
               },
             ),
           ),
-          // Lista observando o ViewModel (neste caso, Provider reconstrói o widget)
+
+          // Lista de clientes
           Expanded(
             child: vm.clientes.isEmpty
                 ? const Center(child: Text('Nenhum cliente encontrado'))
                 : ListView.builder(
                     itemCount: vm.clientes.length,
                     itemBuilder: (context, index) {
-                      // Usa DTO ao invés de Model
-                      final ClienteDTO dto = vm.clientes[index];
+                      final dto = vm.clientes[index];
+                      // ... (Restante do ListTile)
                       return ListTile(
                         title: Text(dto.nome),
-                        subtitle: Text(
-                          dto.subtitulo,
-                        ), // Dado formatado pelo ViewModel
+                        subtitle: Text(dto.subtitulo),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            // Botão editar
                             IconButton(
                               icon: const Icon(Icons.edit),
                               onPressed: () async {
-                                // Navega para edição passando o DTO
                                 await Navigator.push(
                                   context,
                                   MaterialPageRoute(
@@ -101,15 +159,12 @@ class _ListaClientesPageState extends State<ListaClientesPage> {
                                         CadastroClientePage(clienteDTO: dto),
                                   ),
                                 );
-                                // Recarrega a lista
                                 await vm.loadClientes(_searchController.text);
                               },
                             ),
-                            // Botão excluir
                             IconButton(
                               icon: const Icon(Icons.delete, color: Colors.red),
                               onPressed: () async {
-                                // Chama o ViewModel para excluir e atualiza a lista
                                 await vm.removerCliente(dto.codigo!);
                               },
                             ),

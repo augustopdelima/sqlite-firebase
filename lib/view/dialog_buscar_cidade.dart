@@ -3,14 +3,14 @@ import 'package:provider/provider.dart';
 import '../viewmodel/cidade_viewmodel.dart';
 import 'cadastro_cidade.dart';
 
-class DialogBuscaCidade extends StatefulWidget {
-  const DialogBuscaCidade({super.key});
+class BuscaCidadeModal extends StatefulWidget {
+  const BuscaCidadeModal({super.key});
 
   @override
-  State<DialogBuscaCidade> createState() => _DialogBuscaCidadeState();
+  State<BuscaCidadeModal> createState() => _BuscaCidadeModalState();
 }
 
-class _DialogBuscaCidadeState extends State<DialogBuscaCidade> {
+class _BuscaCidadeModalState extends State<BuscaCidadeModal> {
   late TextEditingController _buscaController;
   String _filtro = '';
 
@@ -31,46 +31,58 @@ class _DialogBuscaCidadeState extends State<DialogBuscaCidade> {
 
   @override
   Widget build(BuildContext context) {
-    // Aqui listen: true → diálogo será reconstruído quando cidades mudarem
     final vm = Provider.of<CidadeViewModel>(context);
-
     final cidadesFiltradas = vm.cidades
         .map((c) => c.nome)
         .where((nome) => nome.toLowerCase().contains(_filtro.toLowerCase()))
         .toList();
 
-    return AlertDialog(
-      title: const Text('Buscar Cidade'),
-      content: Column(
+    return Padding(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+        top: 16,
+        left: 16,
+        right: 16,
+      ),
+      child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          Container(
+            width: 50,
+            height: 5,
+            margin: const EdgeInsets.only(bottom: 12),
+            decoration: BoxDecoration(
+              color: Colors.grey[400],
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+          const Text(
+            'Buscar Cidade',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
           TextField(
             controller: _buscaController,
             decoration: const InputDecoration(
               labelText: 'Digite o nome da cidade',
               suffixIcon: Icon(Icons.search),
             ),
-            onChanged: (value) {
-              setState(() => _filtro = value);
-            },
+            onChanged: (value) => setState(() => _filtro = value),
           ),
+          const SizedBox(height: 8),
           TextButton(
             onPressed: () async {
-              await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const CadastroCidadePage(),
-                ),
+              await Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const CadastroCidadePage()),
               );
-              // Como listen:true, ao salvar uma cidade e chamar notifyListeners(),
-              // este diálogo será atualizado automaticamente.
+              vm.loadCidades('');
             },
             child: const Text('Adicionar cidade'),
           ),
-          const SizedBox(height: 16),
-          Expanded(
+          const SizedBox(height: 8),
+          SizedBox(
+            height: 250,
             child: ListView.builder(
-              shrinkWrap: true,
               itemCount: cidadesFiltradas.length,
               itemBuilder: (context, index) {
                 final cidade = cidadesFiltradas[index];
@@ -83,12 +95,6 @@ class _DialogBuscaCidadeState extends State<DialogBuscaCidade> {
           ),
         ],
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Cancelar'),
-        ),
-      ],
     );
   }
 }
