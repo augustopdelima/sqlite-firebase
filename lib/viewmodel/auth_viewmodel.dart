@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/foundation.dart';
 
-class AuthService extends ChangeNotifier {
+class AuthViewModel extends ChangeNotifier {
   final _googleSignIn = GoogleSignIn();
   final _auth = FirebaseAuth.instance;
 
@@ -12,7 +12,7 @@ class AuthService extends ChangeNotifier {
 
   bool get isLoggedIn => _user != null;
 
-  AuthService() {
+  AuthViewModel() {
     _auth.authStateChanges().listen((user) {
       _user = user;
       notifyListeners();

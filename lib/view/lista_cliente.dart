@@ -1,7 +1,8 @@
 import 'dart:async'; // Importar para usar Timer
 
 import 'package:exdb/components/shared_switch.dart';
-import 'package:exdb/services/auth_services.dart';
+import 'package:exdb/viewmodel/auth_viewmodel.dart';
+import 'package:exdb/view/camera_view.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../viewmodel/cliente_viewmodel.dart';
@@ -54,7 +55,7 @@ class _ListaClientesPageState extends State<ListaClientesPage> {
     // Observe que a ViewModel é acessada antes do build (no _onSearchChanged), mas
     // aqui ela é acessada para acionar a reconstrução quando os dados mudam.
     final vm = Provider.of<ClienteViewModel>(context);
-    final auth = Provider.of<AuthService>(context);
+    final auth = Provider.of<AuthViewModel>(context);
 
     final user = auth.user;
     final nome = user?.displayName ?? 'usuário';
@@ -160,6 +161,17 @@ class _ListaClientesPageState extends State<ListaClientesPage> {
                                   ),
                                 );
                                 await vm.loadClientes(_searchController.text);
+                              },
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.camera),
+                              onPressed: () async {
+                                await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => CameraView(clienteDTO: dto),
+                                  ),
+                                );
                               },
                             ),
                             IconButton(

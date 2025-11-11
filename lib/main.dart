@@ -1,6 +1,6 @@
 import 'package:exdb/firebase_options.dart';
 import 'package:exdb/repository/adapter/cidade_adapter.dart';
-import 'package:exdb/services/auth_services.dart';
+import './viewmodel/auth_viewmodel.dart';
 import 'package:exdb/view/lista_cliente.dart';
 import 'package:exdb/view/login.dart';
 import 'package:flutter/material.dart';
@@ -38,7 +38,7 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (_) => settings),
         ChangeNotifierProvider(create: (_) => clienteVM),
         ChangeNotifierProvider(create: (_) => cidadeVM),
-        ChangeNotifierProvider(create: (_) => AuthService()),
+        ChangeNotifierProvider(create: (_) => AuthViewModel()),
       ],
       child: const MyApp(),
     ),
@@ -64,7 +64,7 @@ class AuthGate extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final auth = Provider.of<AuthService>(context);
+    final auth = Provider.of<AuthViewModel>(context);
 
     if (auth.isLoggedIn) {
       return const ListaClientesPage();

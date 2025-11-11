@@ -1,13 +1,13 @@
+import 'package:exdb/viewmodel/auth_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../services/auth_services.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final auth = Provider.of<AuthService>(context);
+    final auth = Provider.of<AuthViewModel>(context);
 
     return Scaffold(
       body: Center(
