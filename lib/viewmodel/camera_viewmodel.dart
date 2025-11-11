@@ -10,7 +10,6 @@ class CameraViewModel {
   bool inicializado = false;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  /// Inicializa a câmera do dispositivo
   Future<void> inicializarCamera() async {
     final cameras = await availableCameras();
     controller = CameraController(cameras.first, ResolutionPreset.medium);
@@ -18,14 +17,12 @@ class CameraViewModel {
     inicializado = true;
   }
 
-  /// Captura uma foto e retorna o caminho do arquivo
   Future<String?> tirarFoto() async {
     if (!controller.value.isInitialized) return null;
     final foto = await controller.takePicture();
     return foto.path;
   }
 
-  /// Salva uma foto no Firestore em formato Base64 (com compressão)
   Future<void> salvarNoFirestore({
     required String caminhoFoto,
     required String rotulo,
@@ -38,10 +35,8 @@ class CameraViewModel {
       final imagem = img.decodeImage(bytesOriginais);
       if (imagem == null) throw Exception('Falha ao decodificar imagem.');
 
-      // Redimensiona mantendo proporção
       final imagemReduzida = img.copyResize(imagem, width: larguraMax);
 
-      // Compressão JPEG
       final bytesComprimidos = img.encodeJpg(
         imagemReduzida,
         quality: qualidade,
